@@ -369,7 +369,7 @@ with tab1:
 
     st.subheader("Type Inference Results")
     profile_df = display_table_profile(tp)
-    st.dataframe(profile_df, use_container_width=True, hide_index=True)
+    st.dataframe(profile_df, width="stretch", hide_index=True)
 
     # Numeric stats for numeric columns
     numeric_profiles = [
@@ -393,7 +393,7 @@ with tab1:
                     "Skewness": f"{ns.skewness:.2f}" if ns.skewness is not None else "N/A",
                 }
             )
-        st.dataframe(pd.DataFrame(num_rows), use_container_width=True, hide_index=True)
+        st.dataframe(pd.DataFrame(num_rows), width="stretch", hide_index=True)
 
 
 # ===== Tab 2: Coverage Matrix ===============================================
@@ -435,7 +435,7 @@ with tab2:
         ]
         st.dataframe(
             pd.DataFrame(gap_rows),
-            use_container_width=True,
+            width="stretch",
             hide_index=True,
         )
         if len(gaps) > 50:
@@ -525,7 +525,7 @@ with tab3:
             "Most Common Rate": [f"{v:.1%}" for v in worst_pairs["most_common_rate"]],
         }
     )
-    st.dataframe(worst_pairs_display, use_container_width=True, hide_index=True)
+    st.dataframe(worst_pairs_display, width="stretch", hide_index=True)
 
 
 # ===== Tab 4: Drift Detection ===============================================
@@ -601,7 +601,7 @@ with tab4:
             ].copy()
             display_drift["statistic"] = display_drift["statistic"].map("{:.4f}".format)
             display_drift["p_value"] = display_drift["p_value"].map("{:.6f}".format)
-            st.dataframe(display_drift, use_container_width=True, hide_index=True)
+            st.dataframe(display_drift, width="stretch", hide_index=True)
         else:
             st.info("Not enough period pairs for drift analysis.")
     else:
@@ -774,7 +774,7 @@ with tab5:
                 ]
                 st.dataframe(
                     pd.DataFrame(anom_rows),
-                    use_container_width=True,
+                    width="stretch",
                     hide_index=True,
                 )
             else:
@@ -813,7 +813,7 @@ with tab5:
             ]
             st.dataframe(
                 pd.DataFrame(spike_rows),
-                use_container_width=True,
+                width="stretch",
                 hide_index=True,
             )
             if len(pop_anomalies) > 30:
@@ -979,7 +979,7 @@ with tab6:
     # Dimension breakdown table
     st.subheader("Dimension Breakdown")
     score_display = display_quality_score(overall_score)
-    st.dataframe(score_display, use_container_width=True, hide_index=True)
+    st.dataframe(score_display, width="stretch", hide_index=True)
 
     # ------------------------------------------------------------------
     # Per-state scoring — ALL states
@@ -1075,7 +1075,7 @@ with tab6:
     for col in ["Composite", "Completeness", "Consistency", "Timeliness", "Validity", "Uniqueness"]:
         display_scores[col] = display_scores[col].map("{:.2f}".format)
 
-    st.dataframe(display_scores, use_container_width=True, hide_index=True, height=600)
+    st.dataframe(display_scores, width="stretch", hide_index=True, height=600)
 
     # Expandable per-state detail cards
     st.divider()
@@ -1125,4 +1125,4 @@ with tab6:
                 _show_fig(fig_s)
 
             detail_df = display_quality_score(s)
-            st.dataframe(detail_df, use_container_width=True, hide_index=True)
+            st.dataframe(detail_df, width="stretch", hide_index=True)
