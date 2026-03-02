@@ -121,8 +121,8 @@ st.markdown(
 st.markdown(
     """
     <div style="
-        background: linear-gradient(90deg, #FFF3E0 0%, #FFFDE7 100%);
-        border: 1px solid #FFB84D;
+        background: rgba(255, 184, 77, 0.12);
+        border: 1px solid rgba(255, 184, 77, 0.4);
         border-radius: 8px;
         padding: 0.6rem 1rem;
         margin-bottom: 1rem;
@@ -131,7 +131,7 @@ st.markdown(
         gap: 0.5rem;
     ">
         <span style="font-size: 1.2rem;">&#9888;&#65039;</span>
-        <span style="font-size: 0.85rem; color: #5D4037;">
+        <span style="font-size: 0.85rem; color: #FFB84D;">
             <strong>Disclaimer:</strong> All data shown in this dashboard is
             <strong>100% synthetic / mock data</strong> generated for demonstration
             purposes only. No real criminal justice records are used. This project
