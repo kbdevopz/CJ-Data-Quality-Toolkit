@@ -22,8 +22,8 @@ data/sample/*.csv
 *.swp
 *.swo
 
-# Streamlit
-.streamlit/
+# Streamlit (keep .streamlit/config.toml for deployment theme)
+.streamlit/secrets.toml
 
 # Session data
 .claude/
