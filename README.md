@@ -1,28 +1,19 @@
 # Criminal Justice Data Quality Profiling & Validation Toolkit
 
-A comprehensive data quality toolkit purpose-built for criminal justice data, designed to complement [Recidiviz's](https://www.recidiviz.org/) existing validation framework. Built with their exact tech stack (Python 3.11, pandas, attrs, BigQuery SQL) and coding conventions.
+A data quality toolkit purpose-built for criminal justice data, designed as a potential companion to [Recidiviz's](https://www.recidiviz.org/) platform. Built with their tech stack (Python 3.11, pandas, attrs, BigQuery SQL) and coding conventions so it could integrate naturally alongside their existing infrastructure.
 
-## Why This Exists
+## About This Project
 
-Recidiviz's validation framework (`recidiviz/validation/`) provides two check types: **existence** and **sameness**. These are essential but leave significant gaps in data quality monitoring. This toolkit fills those gaps:
+Recidiviz already does excellent work with data validation — their existence and sameness checks form a solid foundation. This toolkit explores what additional profiling and monitoring capabilities could look like on top of that foundation, offering features such as:
 
-| Capability | Recidiviz Today | This Toolkit |
-|---|---|---|
-| Existence checks | Yes | Yes |
-| Sameness checks | Yes | Yes |
-| Column profiling (null rates, cardinality, distributions) | No | **Yes** |
-| Semantic type inference | No | **Yes** |
-| Cross-state coverage matrices | No | **Yes** |
-| Demographic equity coverage | No | **Yes** |
-| Distribution drift detection (KS test, chi-squared) | No | **Yes** |
-| Temporal drift analysis | No | **Yes** |
-| Anomaly detection (Z-score, IQR, rolling window) | No | **Yes** |
-| Population spike detection | No | **Yes** |
-| Temporal consistency validation | No | **Yes** |
-| Referential integrity checks | No | **Yes** |
-| Composite quality scoring (0-1.0) | No | **Yes** |
-| BigQuery SQL generators | No | **Yes** |
-| Recidiviz-styled visualizations | No | **Yes** |
+- **Column & table profiling** — null rates, cardinality, distributions, semantic type inference
+- **Cross-state coverage matrices** — visualize completeness across states and metrics
+- **Demographic equity analysis** — audit completeness of race, ethnicity, and sex fields
+- **Distribution drift detection** — KS test and chi-squared monitoring across time periods
+- **Anomaly detection** — Z-score, IQR, and rolling window methods for time-series data
+- **Composite quality scoring** — 5-dimension scoring (0–1.0) with letter grades
+- **BigQuery SQL generators** — warehouse-ready SQL for every Python analysis
+- **Interactive dashboard** — Streamlit app with 6 tabs for exploring all of the above
 
 ## Quick Start
 
@@ -112,12 +103,12 @@ data/                     # Synthetic data generation
 
 ## Design Decisions
 
-- **Frozen attrs classes** — All data types are immutable, matching Recidiviz's codebase conventions
-- **SQL generators alongside pandas** — Every analysis includes a BigQuery-compatible SQL equivalent, demonstrating warehouse-scale thinking
-- **Synthetic data with known issues** — Controllable, reproducible demonstrations where the toolkit catches deliberately injected quality problems
-- **Recidiviz visual identity** — Same 11-color palette, same plot conventions
-- **scipy for statistical tests** — KS test and chi-squared are standard; value is knowing when to apply them to CJ data
-- **Type hints everywhere** — Matches their `disallow_untyped_defs = true` mypy configuration
+- **Frozen attrs classes** — All data types are immutable, following Recidiviz's codebase conventions
+- **SQL generators alongside pandas** — Every analysis includes a BigQuery-compatible SQL equivalent for warehouse-scale use
+- **Synthetic data with known issues** — Controllable, reproducible demonstrations with deliberately injected quality problems
+- **Recidiviz visual identity** — Uses the same 11-color palette and plot conventions for a consistent look
+- **scipy for statistical tests** — KS test and chi-squared applied to CJ-specific data patterns
+- **Full type coverage** — Strict mypy with `disallow_untyped_defs = true`
 
 ## Criminal Justice Domain Knowledge
 
