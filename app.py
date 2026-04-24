@@ -116,27 +116,140 @@ st.markdown(
 )
 
 # ---------------------------------------------------------------------------
-# Disclaimer banner
+# Hero / landing explainer
 # ---------------------------------------------------------------------------
 st.markdown(
     """
     <div style="
-        background: rgba(255, 184, 77, 0.12);
-        border: 1px solid rgba(255, 184, 77, 0.4);
-        border-radius: 8px;
-        padding: 0.6rem 1rem;
-        margin-bottom: 1rem;
+        padding: 1.5rem 0 0.75rem 0;
+        margin-bottom: 0.5rem;
+        border-bottom: 1px solid rgba(250, 250, 250, 0.08);
+    ">
+        <div style="
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.18em;
+            color: #00A5CF;
+            text-transform: uppercase;
+            margin-bottom: 0.4rem;
+        ">For data teams receiving corrections data &middot; Open Source</div>
+        <h1 style="
+            font-size: 2.2rem;
+            font-weight: 800;
+            line-height: 1.15;
+            margin: 0 0 0.5rem 0;
+            color: #F3F4F6;
+        ">Criminal Justice Data Quality Toolkit</h1>
+        <p style="
+            font-size: 1.15rem;
+            line-height: 1.5;
+            color: #E5E7EB;
+            margin: 0 0 0.65rem 0;
+            max-width: 72ch;
+            font-weight: 500;
+        ">
+            Every state's corrections data looks different, and every new analytics
+            partnership starts with the same question: <em style="color:#00A5CF; font-style:normal;">is this data trustworthy, and what is it actually telling us?</em>
+        </p>
+        <p style="
+            font-size: 0.98rem;
+            line-height: 1.55;
+            color: #C9CED6;
+            margin: 0 0 0.9rem 0;
+            max-width: 72ch;
+        ">
+            This toolkit is the pre-ingest audit that answers that in minutes
+            instead of weeks. It profiles any corrections dataset, maps which
+            states report which metrics, flags demographic and distributional
+            problems, and rolls everything into a letter-grade score &mdash; so
+            a forward-deployed engineer or analyst can walk into a new state
+            partnership already knowing where the data is solid and where it
+            isn't. Open-source Python, built on the Recidiviz stack as a
+            complementary layer to their existing platform.
+        </p>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
+_CAPABILITY_CARDS = [
+    (
+        "Which columns can I trust?",
+        "Null rates, type inference, and distribution stats for every field &mdash; so you know what's usable before you build on it.",
+    ),
+    (
+        "Which states report what?",
+        "A cross-state &times; metric heatmap. Answers 'what does this partner actually populate?' at a glance &mdash; saves weeks of scoping.",
+    ),
+    (
+        "Did the data just change?",
+        "KS test, chi-squared, and time-series anomaly detection catch silent schema drift and reporting gaps before they reach dashboards.",
+    ),
+    (
+        "How good is this data, really?",
+        "A 5-dimension letter-grade score per state &mdash; the exec-readable rollup that turns a notebook into a decision.",
+    ),
+]
+
+_card_cols = st.columns(4)
+for _col, (_title, _body) in zip(_card_cols, _CAPABILITY_CARDS):
+    with _col:
+        st.markdown(
+            f"""
+            <div style="
+                background: rgba(0, 165, 207, 0.06);
+                border: 1px solid rgba(0, 165, 207, 0.20);
+                border-radius: 8px;
+                padding: 0.85rem 1rem;
+                height: 100%;
+                min-height: 130px;
+            ">
+                <div style="
+                    font-size: 0.95rem;
+                    font-weight: 700;
+                    color: #00A5CF;
+                    margin-bottom: 0.45rem;
+                    line-height: 1.25;
+                ">{_title}</div>
+                <div style="
+                    font-size: 0.82rem;
+                    line-height: 1.45;
+                    color: #C9CED6;
+                ">{_body}</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+st.markdown(
+    """
+    <div style="
         display: flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: 1rem;
+        margin: 1rem 0 0.25rem 0;
+        flex-wrap: wrap;
     ">
-        <span style="font-size: 1.2rem;">&#9888;&#65039;</span>
-        <span style="font-size: 0.85rem; color: #FFB84D;">
-            <strong>Disclaimer:</strong> All data shown in this dashboard is
-            <strong>100% synthetic / mock data</strong> generated for demonstration
-            purposes only. No real criminal justice records are used. This project
-            showcases the capabilities of the
-            <code>cj_data_quality</code> Python library.
+        <a href="https://github.com/kbdevopz/CJ-Data-Quality-Toolkit" target="_blank"
+           style="
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            background: #00A5CF; color: #0E1117;
+            padding: 0.45rem 0.95rem;
+            border-radius: 6px;
+            font-size: 0.85rem; font-weight: 700;
+            text-decoration: none;
+            letter-spacing: 0.02em;
+        ">View source on GitHub &rarr;</a>
+        <span style="font-size: 0.8rem; color: #9CA3AF;">
+            Jump to the <strong>About</strong> tab below for how it was built &amp; why.
+        </span>
+        <span style="flex: 1;"></span>
+        <span style="
+            font-size: 0.72rem;
+            color: #FFB84D;
+            opacity: 0.85;
+        ">
+            &#9888;&#65039; Demo uses 100&#37; synthetic data &mdash; see About tab.
         </span>
     </div>
     """,
@@ -336,10 +449,11 @@ with st.sidebar:
     )
 
 # ---------------------------------------------------------------------------
-# Main area: 6 tabs
+# Main area: About + 6 analytical tabs
 # ---------------------------------------------------------------------------
-tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(
+tab_about, tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(
     [
+        "About",
         "Overview & Profiling",
         "Coverage Matrix",
         "Demographic Equity",
@@ -348,6 +462,171 @@ tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(
         "Quality Scoring",
     ]
 )
+
+# ===== About tab ============================================================
+with tab_about:
+    st.markdown(
+        """
+        ## The problem this solves
+
+        Organizations that work with criminal justice data &mdash; think
+        [Recidiviz](https://www.recidiviz.org/), research institutes, state
+        oversight bodies &mdash; typically receive corrections data from **state
+        Departments of Corrections (DOCs)**. There are ~50 state DOCs, each
+        running a different case-management system, each defining their
+        columns differently, each updating their schemas on their own quiet
+        schedule. Even within one state, the data that arrives this quarter
+        rarely looks exactly like last quarter.
+
+        The result is that every new state integration starts with the same
+        slow, painful work: *figure out what this state actually reports,
+        figure out what it's hiding, figure out what changed, figure out
+        whether any of it is trustworthy enough to put into a dashboard*.
+        That discovery work is usually done by hand, in notebooks, over days
+        or weeks &mdash; and if anything is missed, the problems show up
+        downstream as confusing charts, broken pipelines, or worse,
+        misleading insights sent to policymakers.
+
+        ## The concrete scenario
+
+        Imagine it's your first day on a new state partnership. The state's
+        data team sends you a **500 MB CSV** export of corrections records
+        and says &ldquo;this is what we have.&rdquo; You need to answer, fast:
+
+        > *Which columns are actually populated? Which metrics does this
+        state report (and which don't they)? Are the demographic fields
+        complete enough to run equity analysis? Did the data schema drift
+        since last quarter? Is it safe to wire this into our ingestion
+        pipeline?*
+
+        Without tooling, that's two weeks of Jupyter notebooks and
+        back-and-forth with state DBAs. **With this toolkit, it's a
+        30-minute structured report plus a letter-grade score you can put
+        in front of a program manager.**
+
+        ## What it actually does, in plain language
+
+        Instead of opening a CSV and starting from scratch, you load it into
+        this toolkit and get back, in order:
+
+        - **A profile of every column** &mdash; what percent is null, what
+          type is it actually (vs. what the schema claims), what are the
+          distinct values, how numeric columns are distributed. You learn
+          which fields are usable before building on them.
+        - **A coverage matrix** that shows every state &times; every metric
+          at a glance. Red cells are metrics the state doesn't populate.
+          One heatmap answers a conversation you'd otherwise have via email
+          over two weeks.
+        - **A demographic equity audit** that measures how complete race,
+          ethnicity, and sex fields are, broken down by state. Incomplete
+          demographics aren't just a data-quality issue &mdash; they're a
+          policy issue, because they hide disparities.
+        - **Drift and anomaly detection** &mdash; statistical tests (KS,
+          chi-squared) on temporal distributions, plus Z-score / IQR /
+          rolling-window scans for population spikes and missing reporting
+          periods. Catch silent regressions before they reach a dashboard.
+        - **A composite quality score** per state, across five dimensions
+          (completeness, consistency, timeliness, validity, uniqueness),
+          with an A&ndash;F letter grade. The exec-readable artifact that
+          turns a notebook into a decision.
+        - **BigQuery SQL generators** for every analysis, so when you need
+          to run it against a warehouse-scale dataset (not a 500 MB CSV),
+          you hand the state-side DBA runnable SQL instead of a Python
+          black box.
+
+        ## Who this is for
+
+        - **Forward-deployed engineers** at data nonprofits (like Recidiviz)
+          on week one of a new state partnership, trying to scope the
+          integration before committing to a pipeline.
+        - **Program managers and research leads** who need a readable
+          quality signal on data coming out of an ingestion pipeline,
+          without having to read a 200-line notebook.
+        - **State-side data teams** who want to self-audit their exports
+          before sending them &mdash; the SQL generators mean they can run
+          the same checks locally.
+
+        ## Why I built it
+
+        I'm a Data Science Master's student at Brown, and I keep being drawn
+        toward the intersection of **messy real-world data and decisions that
+        actually affect people's lives**. Criminal justice data sits
+        squarely in that intersection. Every state's corrections data looks
+        different, every new analytics partnership re-learns that shape
+        from scratch, and the forward-deployed engineering teams at
+        mission-driven organizations like Recidiviz live inside that
+        discovery problem every single day.
+
+        I built this toolkit on my own time as the &ldquo;what I'd want in
+        my pocket on day one&rdquo; answer &mdash; on Recidiviz's exact
+        stack and conventions, so it could plausibly slot in as a
+        complementary pre-ingest layer alongside their existing platform.
+        It's the bridge between a coursework-level interest in data
+        quality and the practical, production-shaped version of that
+        problem in the wild.
+
+        ## How it was built
+
+        Built deliberately on the same stack Recidiviz uses, so the code
+        could plug in naturally:
+
+        - **Python 3.11** &mdash; base language
+        - **`pandas` + `numpy`** &mdash; data manipulation
+        - **`attrs`** with frozen classes &mdash; immutable data types,
+          matching Recidiviz's codebase convention
+        - **`scipy`** &mdash; Kolmogorov&ndash;Smirnov and chi-squared tests
+          for distribution drift
+        - **`matplotlib` + `seaborn`** &mdash; visualizations with the
+          Recidiviz color palette
+        - **Streamlit** &mdash; this dashboard (six analytical tabs + this
+          one)
+        - **BigQuery SQL generators** &mdash; every Python analysis has a
+          warehouse-scale SQL equivalent so it can run at production scale
+        - **`pytest`** &mdash; 277 tests, ~85% coverage target, strict
+          `mypy` with `disallow_untyped_defs = true`
+        - **Open source, Apache 2.0**, source on [GitHub](https://github.com/kbdevopz/CJ-Data-Quality-Toolkit)
+
+        ## Design decisions worth noting
+
+        - **SQL alongside pandas, not instead of it.** Pandas is great for
+          exploration, but production answers have to run on BigQuery. Every
+          analytical module emits both, so you can prototype in a notebook
+          and ship the same logic to the warehouse.
+        - **Synthetic data with deliberately-injected known failures.**
+          Drift, null spikes, and demographic imbalance are injected into
+          the synthetic dataset so the detectors can be unit-tested against
+          ground truth. The synthetic data is how the analytical code is
+          verified &mdash; not a shortcut around real data.
+        - **Frozen `attrs` data classes everywhere.** Immutable, hashable,
+          matches Recidiviz's internal conventions, fewer surprises when
+          caching or passing results across modules.
+        - **Criminal-justice domain knowledge baked into the primitives.**
+          Date ordering rules (offense &lt; sentence &lt; admission &lt;
+          release), population metrics (incarceration, supervision,
+          parole, probation), quarterly reporting cadence, and common
+          failure modes (missing demographics, date inversions, reporting
+          gaps, population spikes) are first-class concepts in the library
+          &mdash; not bolted on in the dashboard layer.
+
+        ## Author
+
+        Built by **Karlis Baisden** &mdash; [GitHub](https://github.com/kbdevopz) &middot;
+        [LinkedIn](https://www.linkedin.com/in/karlis-baisden-132251191/) &middot;
+        [Source repo](https://github.com/kbdevopz/CJ-Data-Quality-Toolkit)
+        """
+    )
+
+    st.warning(
+        "**Synthetic data disclaimer.** Every record shown in this dashboard is "
+        "**100% synthetic / mock data**, generated on the fly. No real criminal "
+        "justice records, no personally identifying information, and no state "
+        "partner data is used anywhere. The synthetic generator deliberately "
+        "injects known failure modes (drift, null spikes, demographic "
+        "imbalance) so the analytical modules can be verified against ground "
+        "truth — in other words, the synthetic data is how this toolkit is "
+        "unit-tested, not a shortcut around real data.",
+        icon="⚠️",
+    )
 
 # ===== Tab 1: Overview & Profiling ==========================================
 with tab1:
