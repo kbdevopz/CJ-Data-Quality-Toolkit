@@ -258,6 +258,57 @@ st.markdown(
 
 
 # ---------------------------------------------------------------------------
+# Helpers: "why this matters" explainer layer
+# ---------------------------------------------------------------------------
+def _tab_intro(markdown_body: str) -> None:
+    """Scene-setting blockquote at the top of an analytical tab."""
+    st.markdown(
+        f"""
+        <div style="
+            border-left: 3px solid #00A5CF;
+            padding: 0.55rem 0 0.55rem 0.9rem;
+            margin: 0.25rem 0 1.25rem 0;
+            color: #C9CED6;
+            font-size: 0.95rem;
+            line-height: 1.55;
+            max-width: 72ch;
+        ">{markdown_body}</div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def _why_callout(title: str, body: str) -> None:
+    """Cyan-accent explainer card above a visualization."""
+    st.markdown(
+        f"""
+        <div style="
+            background: rgba(0, 165, 207, 0.06);
+            border: 1px solid rgba(0, 165, 207, 0.20);
+            border-radius: 8px;
+            padding: 0.7rem 0.95rem;
+            margin: 0.25rem 0 0.75rem 0;
+        ">
+            <div style="
+                font-size: 0.82rem;
+                font-weight: 700;
+                color: #00A5CF;
+                margin-bottom: 0.3rem;
+                letter-spacing: 0.01em;
+            ">{title}</div>
+            <div style="
+                font-size: 0.86rem;
+                line-height: 1.5;
+                color: #C9CED6;
+                max-width: 78ch;
+            ">{body}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+# ---------------------------------------------------------------------------
 # Helper: render matplotlib figure and close it
 # ---------------------------------------------------------------------------
 def _show_fig(fig: plt.Figure) -> None:
@@ -632,19 +683,38 @@ with tab_about:
 with tab1:
     st.header("Overview & Profiling")
 
+    _tab_intro(
+        """When a corrections export lands in your inbox, the first questions aren't interesting &mdash; they're <em>what columns actually exist, how much is missing, and are the numbers even stored as numbers?</em> This tab answers those before you commit to anything downstream."""
+    )
+
     # Metric cards
     col1, col2, col3 = st.columns(3)
     col1.metric("Row Count", f"{tp.row_count:,}")
     col2.metric("Duplicate Rate", f"{tp.duplicate_rate:.2%}")
     col3.metric("Overall Null Rate", f"{tp.overall_null_rate:.1%}")
 
+    _why_callout(
+        "Why null rate by column matters",
+        """An overall null rate of 12% sounds acceptable &mdash; right up until you notice it's one column sitting at 80% null dragging the rest. With a real state export, this view is what catches <em>&ldquo;the column you should never aggregate on&rdquo;</em> before it silently poisons a downstream dashboard. It's also the single most common reason a partner's data looks healthy in summary but can't actually support an equity analysis &mdash; the state reports race, but only for 30% of rows.""",
+    )
+
     st.subheader("Null Rate by Column")
     fig_null = plot_null_rate_bars(tp.column_profiles)
     _show_fig(fig_null)
 
+    _why_callout(
+        "Why the profile summary matters",
+        """The summary dashboard is the &ldquo;first three minutes with the data&rdquo; view. In one glance you see the shape of the table, which columns are usable, and where to look next. On a real engagement, this is the artifact you'd screenshot into a Slack message to your lead with &ldquo;here's what just landed &mdash; here's what's actually in it.&rdquo;""",
+    )
+
     st.subheader("Profile Summary Dashboard")
     fig_profile = plot_profile_summary(tp)
     _show_fig(fig_profile)
+
+    _why_callout(
+        "Why infer types when the schema already has them",
+        """DOC exports frequently hand you numbers stored as strings, dates stored as free-text, and booleans encoded as &ldquo;Y&rdquo;/&ldquo;N&rdquo;/&ldquo;&rdquo;. The declared schema is aspirational; inference tells you what the values <em>actually</em> are. Catching &ldquo;sentence_length is technically a string because three rows had a hyphen in them&rdquo; before ingest saves a week of downstream conversion bugs.""",
+    )
 
     st.subheader("Type Inference Results")
     profile_df = display_table_profile(tp)
@@ -655,6 +725,10 @@ with tab1:
         p for p in tp.column_profiles if p.numeric_stats is not None
     ]
     if numeric_profiles:
+        _why_callout(
+            "Why distribution stats matter before modeling",
+            """Mean alone lies. A sentence-length column with mean 24 months and std 200 is telling you there's a life-sentence row encoded as <code>9999</code>, or a data-entry glitch putting days in the months field. Skewness, percentiles, and min/max are the sanity check that tells you which columns you can compute on directly versus which need a cleaning pass first.""",
+        )
         st.subheader("Numeric Column Statistics")
         num_rows = []
         for p in numeric_profiles:
@@ -679,6 +753,10 @@ with tab1:
 with tab2:
     st.header("Cross-State Coverage Matrix")
 
+    _tab_intro(
+        """One state reports admissions and releases but not sentence length; another reports sentences but only by facility, not offense type. The coverage matrix is the single view that answers <em>&ldquo;what does this partner actually populate?&rdquo;</em> across every metric at once."""
+    )
+
     # Build coverage matrix (cached)
     metric_cols = [c for c in CJ_POPULATION_METRICS if c in df.columns]
     date_cols_for_cov = [
@@ -692,6 +770,11 @@ with tab2:
 
     _df_hash = hash((len(df), tuple(df.columns)))
     coverage_matrix = _cached_coverage_matrix(_df_hash, df, tuple(all_coverage_cols))
+
+    _why_callout(
+        "Why the coverage heatmap matters",
+        """Sitting in week-one scoping meetings, the question <em>&ldquo;can we run this analysis for State X?&rdquo;</em> usually turns out to mean <em>&ldquo;does State X populate the fields this analysis needs?&rdquo;</em> This heatmap answers it at a glance &mdash; red cells are missing metrics, which are otherwise only discoverable by running queries and emailing state DBAs for a week. For a real ingestion, you'd use this to scope which cross-state analyses are viable from day one.""",
+    )
 
     # Show worst 20 states
     st.subheader("Coverage Heatmap (20 Worst States)")
@@ -722,6 +805,11 @@ with tab2:
     else:
         st.success("No coverage gaps below 80% threshold.")
 
+    _why_callout(
+        "Why mean completeness per metric matters",
+        """Rolled up the other way, this tells you which <em>metrics</em> &mdash; not states &mdash; are structurally unreliable across your entire partner set. If <code>release_date</code> is populated 95% of the time on average but <code>offense_date</code> only 40%, any cross-state analysis that hinges on offense dates needs a different approach. It also flags metrics that probably need a &ldquo;define your terms&rdquo; conversation with every partner individually.""",
+    )
+
     # Coverage summary bar chart
     st.subheader("Mean Completeness per Metric")
     summary = summarize_coverage(coverage_matrix)
@@ -748,10 +836,19 @@ with tab2:
 with tab3:
     st.header("Demographic Equity Analysis")
 
+    _tab_intro(
+        """Incomplete demographic fields aren't just a data-quality issue &mdash; they're a policy issue, because missing race or ethnicity data <em>hides disparities</em>. This tab asks: can this state's data actually support an equity analysis at all, or would running one quietly mislead the reader?"""
+    )
+
     # Equity analysis (cached)
     _df_hash_eq = hash((len(df), tuple(df.columns)))
     equity_rows = _cached_equity_analysis(_df_hash_eq, df)
     equity_df = pd.DataFrame(equity_rows)
+
+    _why_callout(
+        "Why demographic completeness matters",
+        """A state that reports race for 30% of records can't support racial disparity analysis, full stop &mdash; and if you publish one anyway, you've built a chart that implies the other 70% don't exist. This heatmap flags the state-field combinations where the demographic data simply isn't there, so you can scope equity work honestly rather than discover mid-project that the data won't support the question.""",
+    )
 
     # Equity heatmap — 20 worst states
     st.subheader("Demographic Completeness Heatmap (20 Worst States)")
@@ -761,6 +858,11 @@ with tab3:
 
     fig_eq = plot_equity_heatmap(worst_equity_df, figsize=(12, 8))
     _show_fig(fig_eq)
+
+    _why_callout(
+        "Why the disparity index matters",
+        """Completeness tells you whether the data <em>exists</em>; the disparity index tells you whether the distribution <em>varies</em> enough across groups to be worth analyzing. A low coefficient of variation means the population looks demographically uniform (or the data is too smoothed to see variation); a high one flags states where there's real structural difference worth digging into. It's the &ldquo;where should an analyst spend their time&rdquo; signal.""",
+    )
 
     # Disparity index
     st.subheader("Disparity Index (Top 15 States)")
@@ -791,6 +893,11 @@ with tab3:
     else:
         st.info("Age and race columns required for disparity analysis.")
 
+    _why_callout(
+        "Why worst state-field pairs matter",
+        """The heatmap shows you patterns; this table shows you the concrete cases &mdash; <em>&ldquo;in State X, the ethnicity field is 94% null, and of the populated 6%, 98% are the same value.&rdquo;</em> This is the operational punch list: the specific state-field combinations that need a conversation with the partner before the data can be used for anything beyond descriptive rollups.""",
+    )
+
     # Worst state-field pairs table
     st.subheader("Worst 20 State-Field Pairs by Completeness")
     worst_pairs = equity_df.nsmallest(20, "completeness").copy()
@@ -810,6 +917,15 @@ with tab3:
 # ===== Tab 4: Drift Detection ===============================================
 with tab4:
     st.header("Distribution Drift Detection")
+
+    _tab_intro(
+        """Corrections data schemas don't &ldquo;change&rdquo; dramatically &mdash; they drift. A reporting cadence shifts quietly, a category gets renamed, a new data-entry default starts filling in. The drift tab is the monitoring layer that catches that before downstream dashboards go subtly wrong."""
+    )
+
+    _why_callout(
+        "Why KS-test drift detection matters",
+        """The Kolmogorov&ndash;Smirnov test is quiet statistical insurance: it compares this quarter's distribution of a numeric field against last quarter's and fires when they've diverged more than sampling noise would explain. In production this is what catches &ldquo;State X's population count dropped 20% because they switched who counts as 'in custody,' not because people were released.&rdquo; Silent schema drift is the most expensive kind &mdash; this is the cheapest detector for it.""",
+    )
 
     monthly = _aggregate_monthly(df)
 
@@ -891,6 +1007,11 @@ with tab4:
 
     # Categorical drift section
     st.divider()
+    _why_callout(
+        "Why categorical drift matters",
+        """Numeric distributions drift in magnitude; categorical fields drift differently &mdash; categories appear, disappear, or swap labels. Chi-squared compares the category frequencies quarter-over-quarter and flags when the shape of the distribution has changed more than chance would allow. Operationally, this is what catches renamed race categories, new facility codes, or a state quietly consolidating two classifications into one &mdash; changes that silently invalidate any longitudinal chart.""",
+    )
+
     st.subheader("Categorical Drift: Race Distribution")
     if "race" in df.columns and "reporting_date" in df.columns:
         state_df = df[df["state_code"] == drift_state].copy()
@@ -949,6 +1070,15 @@ with tab4:
 # ===== Tab 5: Anomaly Detection =============================================
 with tab5:
     st.header("Anomaly Detection")
+
+    _tab_intro(
+        """Drift asks <em>&ldquo;did the distribution change?&rdquo;</em> Anomaly detection asks <em>&ldquo;is this single point wildly off?&rdquo;</em> Both matter in production monitoring, and they catch different failure modes &mdash; a single month of bad data, a single state that suddenly reports 10&times; its usual admissions, or a quietly-missing reporting period."""
+    )
+
+    _why_callout(
+        "Why single-point anomalies matter",
+        """A state's monthly admission count that jumps from 1,200 to 12,000 is almost never a real population spike &mdash; it's a decimal error, a duplicated upload, or a change in what counts as an admission. Z-score, IQR, and rolling-window detection each catch slightly different anomaly shapes (global outliers, robust-to-outlier cases, and local trend breaks respectively), so you can pick the right lens for the series you're monitoring. In a real ops workflow, these feed alerts.""",
+    )
 
     col_method, col_threshold, col_state = st.columns(3)
     method = col_method.selectbox(
@@ -1065,6 +1195,11 @@ with tab5:
 
     # Spike detection: cross-state population anomalies
     st.divider()
+    _why_callout(
+        "Why cross-state anomalies matter",
+        """Comparing a state to its own history catches per-state glitches; comparing states against each other catches one that's structurally off-model &mdash; a state reporting population numbers an order of magnitude away from peers of similar size. This is the &ldquo;did we receive somebody else's file&rdquo; check. Rare but high-impact, and easier to eyeball across states than within one.""",
+    )
+
     st.subheader("Cross-State Population Anomalies")
     if "total_population" in monthly_anom.columns:
         try:
@@ -1104,6 +1239,11 @@ with tab5:
 
     # Missing period detection
     st.divider()
+    _why_callout(
+        "Why missing reporting periods matter",
+        """A monthly chart with a gap period silently becomes an incorrect chart &mdash; the line just connects across the hole as if nothing happened. Detecting missing periods explicitly (as opposed to assuming regular cadence) is the difference between publishing a correct-looking-but-wrong dashboard and knowing up front that State X didn't report in June and any average that spans June is on thin ice.""",
+    )
+
     st.subheader("Missing Reporting Periods")
     missing = detect_missing_periods(
         state_anom_df,
@@ -1235,6 +1375,15 @@ def _compute_all_state_scores(
 with tab6:
     st.header("Quality Scoring")
 
+    _tab_intro(
+        """All of the previous tabs are the diagnostics; this one is the executive rollup. A single composite score across five dimensions &mdash; completeness, consistency, timeliness, validity, uniqueness &mdash; gives a program manager a readable quality signal without asking them to read a notebook."""
+    )
+
+    _why_callout(
+        "Why a composite score matters &mdash; and what each dimension captures",
+        """A letter grade is the artifact you can put in front of a non-technical stakeholder. The five dimensions each capture a different failure mode: <strong>completeness</strong> (are fields populated), <strong>consistency</strong> (do related fields agree &mdash; does release_date come after admission_date), <strong>timeliness</strong> (is the data recent enough to matter), <strong>validity</strong> (do values fall in the ranges they should), <strong>uniqueness</strong> (are there duplicate person-records). Any one of them tanking drops the composite, which is the point &mdash; a healthy average across broken dimensions would hide the problem.""",
+    )
+
     # Overall composite score
     st.subheader("Overall Composite Score")
     _report_dates = pd.to_datetime(df["reporting_date"], errors="coerce").dropna()
@@ -1264,6 +1413,11 @@ with tab6:
     # Per-state scoring — ALL states
     # ------------------------------------------------------------------
     st.divider()
+    _why_callout(
+        "Why per-state scoring matters",
+        """Partner engagements aren't uniform &mdash; one state's data is in great shape, another's is a 6-month project before you can even start. Per-state grades give a portfolio-level view of where data-quality work needs to happen first, and the heatmap shows <em>which dimension</em> is dragging each state's grade down so triage is targeted. Clicking into a state card gives the full scorecard you'd attach to a status update or hand to an engagement lead.""",
+    )
+
     st.subheader("Per-State Quality Scores (All States)")
 
     score_rows = _compute_all_state_scores(
